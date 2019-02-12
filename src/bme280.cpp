@@ -56,9 +56,9 @@ bool setup_bme280(struct bme280_dev &dev)
 	if (rslt)
 		return false;
 
-	dev.settings.osr_h = BME280_OVERSAMPLING_1X;
+	dev.settings.osr_h = BME280_OVERSAMPLING_4X;
 	dev.settings.osr_p = BME280_OVERSAMPLING_1X;
-	dev.settings.osr_t = BME280_OVERSAMPLING_1X;
+	dev.settings.osr_t = BME280_OVERSAMPLING_4X;
 	dev.settings.filter = BME280_FILTER_COEFF_OFF;
 
 	uint8_t settings_sel = BME280_OSR_PRESS_SEL | BME280_OSR_TEMP_SEL | BME280_OSR_HUM_SEL | BME280_FILTER_SEL;
