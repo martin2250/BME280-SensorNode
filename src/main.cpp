@@ -33,8 +33,10 @@ void read_sensor()
 {
 	struct bme280_dev dev;
 
-	if (!setup_bme280(dev))
+	if (!setup_bme280(dev)) {
+		Serial.println("bme280 setup failed");
 		sleep();
+	}
 
 	// ##############################
 
@@ -47,8 +49,10 @@ void read_sensor()
 		WiFi.begin(setting_wifi_ssid.value, setting_wifi_psk.value);
 		Serial.println("WiFi failed, retrying.");
 
-		if (!(retrycounter--))
+		if (!(retrycounter--)) {
+			Serial.println("too many wifi reconnect attempts");
 			sleep();
+		}
 	}
 
 	// ##############################
