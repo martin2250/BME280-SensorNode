@@ -9,11 +9,12 @@ SettingsManager smgr(&httpServer);
 
 Setting_Int32 setting_interval;
 
-Setting_Str setting_wifi_ssid;
-Setting_Str setting_wifi_psk;
+Setting_String setting_wifi_ssid;
+Setting_String setting_wifi_psk;
 
-Setting_Str setting_server_url;
-Setting_Str setting_measurement;
+Setting_IPAddress setting_server_ip;
+Setting_Int32 setting_server_port;
+Setting_String setting_tags;
 
 #define EEPROM_ADDRESS 0x50
 
@@ -75,10 +76,13 @@ bool eeprom_read(uint16_t address, uint8_t length, uint8_t *buffer)
 void init_settings()
 {
 	setting_interval.address = 0x00;
+	setting_server_ip.address = 0x01;
+	setting_server_port.address = 0x02;
+
 	setting_wifi_ssid.address = 0x10;
 	setting_wifi_psk.address = 0x11;
-	setting_server_url.address = 0x20;
-	setting_measurement.address = 0x22;
+
+	setting_tags.address = 0x20;
 
 	smgr.readfunc = eeprom_read;
 	smgr.writefunc = eeprom_write;
@@ -86,8 +90,9 @@ void init_settings()
 	smgr.settings.push_back(&setting_interval);
 	smgr.settings.push_back(&setting_wifi_ssid);
 	smgr.settings.push_back(&setting_wifi_psk);
-	smgr.settings.push_back(&setting_server_url);
-	smgr.settings.push_back(&setting_measurement);
+	smgr.settings.push_back(&setting_server_ip);
+	smgr.settings.push_back(&setting_server_port);
+	smgr.settings.push_back(&setting_tags);
 
 	setting_interval.abbrev = PSTR("intv");
 	setting_interval.name = PSTR("measurement interval (min)");
@@ -108,17 +113,21 @@ void init_settings()
 	setting_wifi_psk.max_length = 31;
 	setting_wifi_psk.options.hide_value = 1;
 
-	setting_server_url.abbrev = PSTR("url");
-	setting_server_url.name = PSTR("HTTP listener URL");
-	setting_server_url.val_default = PSTR("http://telegraf/listen");
-	setting_server_url.value = (char *)malloc(64);
-	setting_server_url.max_length = 63;
+	setting_server_ip.abbrev = PSTR("ip");
+	setting_server_ip.name = PSTR("Push IP Address");
+	setting_server_ip.val_default = IPAddress(192, 168, 1, 1);
 
-	setting_measurement.abbrev = PSTR("meas");
-	setting_measurement.name = PSTR("Measurement Name and Tags");
-	setting_measurement.val_default = PSTR("sensor,loc=test");
-	setting_measurement.value = (char *)malloc(64);
-	setting_measurement.max_length = 63;
+	setting_server_port.abbrev = PSTR("port");
+	setting_server_port.name = PSTR("Push Port");
+	setting_server_port.val_default = 8001;
+	setting_server_port.min = 0;
+	setting_server_port.max = (1 << 16) - 1;
+
+	setting_tags.abbrev = PSTR("meas");
+	setting_tags.name = PSTR("Measurement Tags");
+	setting_tags.val_default = PSTR("name:sensor loc:test");
+	setting_tags.value = (char *)malloc(64);
+	setting_tags.max_length = 63;
 
 	smgr.load();
 }

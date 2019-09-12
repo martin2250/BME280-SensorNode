@@ -82,26 +82,31 @@ void read_sensor()
 
 	Serial.println("post");
 
-	HTTPClient http;
+	WiFiClient pushClient;
+	pushClient.setTimeout(500);
 
-	http.begin(setting_server_url.value);
-	http.addHeader("Content-Type", "text/plain");
+	uint8_t attempts = 0;
+	while (!pushClient.connect(setting_server_ip.value, setting_server_port.value))
+	{
+		if (++attempts > 3)
+		{
+			Serial.print("too many failed attempts to connect");
+			sleep();
+		}
+	}
 
-	String content = String(setting_measurement.value) +
-			 " temperature=" + String(data.temperature, 2) +
-			 ",humidity=" + String(data.humidity, 2) +
-			 ",voltage=" + String(voltage, 2) +
-			 ",rssi=" + String(rssi) +
-			 "\n";
+	Serial.println("connected");
 
-	int httpCode = http.POST(content);
-	String result = http.getString();
+	String content = String(setting_tags.value) + "|";
+	content += "name:temperature " + String(data.temperature, 2) + "|";
+	content += "name:humidity " + String(data.humidity, 2) + "|";
+	content += "name:voltage pos:battery " + String(voltage, 2) + "|";
+	content += "name:rssi " + String(rssi) + "|";
+	content += "\n";
 
-	Serial.print("http return code: ");
-	Serial.println(httpCode);
-	Serial.println(result);
-
-	http.end();
+	pushClient.println(content);
+	pushClient.flush();
+	pushClient.stop();
 
 	sleep();
 }
